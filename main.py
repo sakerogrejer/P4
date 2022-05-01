@@ -1,29 +1,48 @@
 from cmath import pi
 import numpy as np
 import spring
+import particle
 import pygame
 
 background_colour = (12,12,12)
-
-screen = pygame.display.set_mode((800,600))
+screen = pygame.display.set_mode((800,1200))
 pygame.display.set_caption("Wire")
 screen.fill(background_colour)
 pygame.display.flip()
 running = True
- 
-s = spring.Spring(.001, np.array([[350.0, 250.0],[400.0, 300.0]]), 100, damping=.999)
+
+
+particles = []
+springs = []
+
+for i in range(50):
+    p = particle.Particle(np.array([100.0 + (i*10),100.0 + (i*10)]))
+    particles.append(p)
+    if i >= 1:
+        s = spring.Spring(.1, particles[i], particles[i-1], 1)
+        springs.append(s)
+
+
 while running:
     screen.fill(background_colour)
-    s.draw(screen)
-    s.update()
-
-    if pygame.mouse.get_pressed()[0]:
-        s.pos[1] = np.array([pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]])
-        s.v = np.array([0.0, 0.0])
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    for s in springs:
+        s.update()
+        s.show(screen)
+
+    for p in particles:
+        p.update()
+        p.show(screen)
+        if p == particles[-1] and pygame.mouse.get_pressed()[0]:
+            p.clicked = True
+            p.pos = pygame.mouse.get_pos()
+            p.v = np.array([0.,0.])
+        else :
+            p.clicked = False
 
     pygame.display.flip()
     pygame.display.update()
